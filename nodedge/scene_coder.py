@@ -3,7 +3,7 @@
 Scene Coder module containing :class:`~nodedge.scene_coder.SceneCoder` class.
 """
 import logging
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 from PySide2.QtCore import QObject, Signal
 
@@ -90,9 +90,9 @@ class SceneCoder(QObject):
 
         return orderedNodeList, generatedCode
 
-    def createFileFromGeneratedCode(self, orderedNodeList, generatedCode):
+    def createFileFromGeneratedCode(self, orderedNodeList, generatedCode) -> str:
         # add imports on top
-        importedLibraries = {}
+        importedLibraries: Dict[str, List[str]] = {}
         for currentVarIndex, node in enumerate(orderedNodeList):
             if node.evalString and node.library:
                 if node.library not in importedLibraries:
@@ -114,7 +114,7 @@ class SceneCoder(QObject):
             f"\n\n\nif __name__ == '__main__':\n    {functionName}()\n"
         )
 
-        outputFileString = (
+        outputFileString: str = (
             generatedImport
             + generatedFunctionDef
             + _indent_code(generatedCode)
@@ -122,6 +122,11 @@ class SceneCoder(QObject):
         )
 
         return outputFileString
+
+    def createFile(self) -> str:
+        orderedNodeList, generatedCode = self.generateCode()
+        fileString = self.createFileFromGeneratedCode(orderedNodeList, generatedCode)
+        return fileString
 
     def _appendHierarchyUntilRoot(
         self, currentNode: Node, appendedNodes: List[Node], nodesToAdd: List[Node]
